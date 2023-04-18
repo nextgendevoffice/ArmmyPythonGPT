@@ -1,17 +1,12 @@
-import os
-import logging
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 from linebot_utils import handle_text_message
+import os
 
 app = Flask(__name__)
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 line_bot_api = LineBotApi(os.environ['LINE_CHANNEL_ACCESS_TOKEN'])
 handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
@@ -19,13 +14,11 @@ handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
 @app.route('/webhook', methods=['POST'])
 def webhook():
     signature = request.headers['X-Line-Signature']
-    body = request.get_data(as_text=True)
-    logger.info(f"Request body: {body}")
 
+    body = request.get_data(as_text=True)
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        logger.error("Invalid signature. Check your LINE_CHANNEL_SECRET.")
         abort(400)
 
     return 'OK'
