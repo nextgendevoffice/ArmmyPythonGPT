@@ -12,7 +12,7 @@ def generate_chatgpt_response(prompt):
         'model': 'text-davinci-003',  # Updated to use text-davinci-003
     }
 
-    response = requests.post('https://api.openai.com/v1/engines/davinci-codex/completions', json=data, headers=headers)
+    response = requests.post('https://api.openai.com/v1/completions', json=data, headers=headers)
     response_data = response.json()
     generated_text = response_data['choices'][0]['text'].strip()
 
