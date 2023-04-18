@@ -4,10 +4,6 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-# Add this import line at the top
-from dalle_utils import generate_dalle_image
-
-# Rest of the app.py content
 
 from linebot_utils import handle_text_message
 
@@ -38,11 +34,6 @@ def webhook():
 def handle_message(event):
     reply_message = handle_text_message(event.message.text)
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
-
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    reply_message = handle_text_message(event.message.text)
-    line_bot_api.reply_message(event.reply_token, reply_message)
 
 if __name__ == "__main__":
     app.run()
