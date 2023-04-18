@@ -11,7 +11,7 @@ def generate_chatgpt_response(prompt):
     data = {
         'model': 'gpt-3.5-turbo',  # Adjust the model to your desired GPT model
         'messages': [
-            {'role': 'system', 'content': 'You are a helpful assistant.'},
+            {'role': 'system', 'content': 'สวัสดีจ๋ะนายจ๋า ฉันชื่อ อับดุลเอ๋ย. นายมีอะไรให้อับดุลช่วยไหมจ๋ะนายจ๋า'},
             {'role': 'user', 'content': prompt},
         ],
         'temperature': 0.8,
