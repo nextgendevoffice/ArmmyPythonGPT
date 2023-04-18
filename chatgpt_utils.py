@@ -1,10 +1,11 @@
-import requests
+import aiohttp
+import asyncio
 import os
 import logging
 
 logger = logging.getLogger(__name__)
 
-def generate_chatgpt_response(prompt):
+async def generate_chatgpt_response(prompt):
     api_key = os.environ['OPENAI_API_KEY']
     headers = {
         'Content-Type': 'application/json',
@@ -20,12 +21,20 @@ def generate_chatgpt_response(prompt):
         'temperature': 0.8,
     }
 
-    response = requests.post('https://api.openai.com/v1/chat/completions', json=data, headers=headers)
-    response_data = response.json()
-    generated_text = response_data['choices'][0]['message']['content'].strip()
+    async with aiohttp.ClientSession() as session:
+        async with session.post('https://api.openai.com/v1/chat/completions', json=data, headers=headers) as response:
+            response_data = await response.json()
+            generated_text = response_data['choices'][0]['message']['content'].strip()
 
-    # Log the prompt and generated response
-    logger.info(f"User prompt: {prompt}")
-    logger.info(f"Generated response: {generated_text}")
+            # Log the prompt and generated response
+            logger.info(f"User prompt: {prompt}")
+            logger.info(f"Generated response: {generated_text}")
 
-    return generated_text
+            return generated_text
+
+async def get_response_with_timeout(prompt, timeout=300):
+    try:
+        response = await asyncio.wait_for(generate_chatgpt_response(prompt), timeout=timeout)
+    except asyncio.TimeoutError:
+        response = "Sorry, I'm taking too long to respond. Please try again later."
+    return response
