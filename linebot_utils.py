@@ -1,6 +1,7 @@
 from chatgpt_utils import generate_chatgpt_response
 from dalle_utils import generate_dalle_image
 from linebot.models import ImageSendMessage
+from linebot.models import TextSendMessage
 
 def handle_text_message(text):
     if text.lower().startswith("img:"):
