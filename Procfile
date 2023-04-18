@@ -1,1 +1,1 @@
-web: gunicorn app:app
+gunicorn --workers=20 --timeout=300 app:app
