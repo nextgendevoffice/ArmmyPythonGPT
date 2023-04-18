@@ -1,5 +1,8 @@
 import requests
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_chatgpt_response(prompt):
     api_key = os.environ['OPENAI_API_KEY']
@@ -20,5 +23,9 @@ def generate_chatgpt_response(prompt):
     response = requests.post('https://api.openai.com/v1/chat/completions', json=data, headers=headers)
     response_data = response.json()
     generated_text = response_data['choices'][0]['message']['content'].strip()
+
+    # Log the prompt and generated response
+    logger.info(f"User prompt: {prompt}")
+    logger.info(f"Generated response: {generated_text}")
 
     return generated_text
