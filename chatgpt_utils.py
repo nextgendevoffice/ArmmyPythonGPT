@@ -9,11 +9,17 @@ def generate_chatgpt_response(prompt):
     }
 
     data = {
-        'model': 'text-davinci-003',  # Updated to use text-davinci-003
+        'model': 'gpt-3.5-turbo',  # Adjust the model to your desired GPT model
+        'messages': [
+            {'role': 'system', 'content': 'You are a helpful assistant.'},
+            {'role': 'user', 'content': prompt},
+        ],
+        'max_tokens': 50,
+        'temperature': 0.8,
     }
 
-    response = requests.post('https://api.openai.com/v1/completions', json=data, headers=headers)
+    response = requests.post('https://api.openai.com/v1/chat/completions', json=data, headers=headers)
     response_data = response.json()
-    generated_text = response_data['choices'][0]['text'].strip()
+    generated_text = response_data['choices'][0]['message']['content'].strip()
 
     return generated_text
