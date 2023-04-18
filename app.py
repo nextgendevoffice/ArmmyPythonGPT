@@ -39,8 +39,7 @@ async def webhook():
 
 @handler.add(MessageEvent, message=TextMessage)
 async def handle_message(event):
-    reply_message_task = asyncio.create_task(reply_message(event.reply_token, generate_chatgpt_response(event.message.text)))
-    await reply_message_task
+    asyncio.create_task(reply_message(event.reply_token, generate_chatgpt_response(event.message.text)))
 
 if __name__ == "__main__":
-    asyncio.run(app.run(debug=True))
+    app.run(debug=True)
