@@ -71,6 +71,6 @@ def handle_message(event):
         new_tokens = tokens - tokens_used
 
         if new_tokens < 0:
-            line_bot_api.push_message(user_id, TextSendMessage(text="You've used all your free tokens. Please purchase more tokens to continue using the service."))
+            line_bot_api.push_message(user_id, TextSendMessage(text="You've used all your free tokens Kub. Please purchase more tokens to continue using the service."))
         else:
             update_user_tokens(user_id, new_tokens)
