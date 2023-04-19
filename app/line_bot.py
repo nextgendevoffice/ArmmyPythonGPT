@@ -1,9 +1,12 @@
+import os
+import logging
 from flask import Blueprint, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from .chatgpt import generate_response
-import os
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 line_bp = Blueprint('line_bot', __name__)
 
@@ -27,6 +30,9 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    logging.info("Handling event: %s", event)
+
     text = event.message.text
     response = generate_response(text)
+    logging.info("Generated response: %s", response)
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
