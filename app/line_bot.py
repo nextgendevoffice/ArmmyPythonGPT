@@ -2,7 +2,7 @@ from flask import Blueprint, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
-from .chatgpt import generate_response, generate_image, download_image
+from .chatgpt import generate_response, generate_image, upload_image_to_cloudinary
 import os
 
 line_bp = Blueprint('line_bot', __name__)
@@ -36,16 +36,16 @@ def handle_message(event):
         if prompt:
             image_url = generate_image(prompt)
             if image_url:
-                image_data = download_image(image_url)
+                cloudinary_url = upload_image_to_cloudinary(image_url)
     else:
         reply = generate_response(text)
 
-    if image_data:
+    if cloudinary_url:
         line_bot_api.reply_message(
             event.reply_token,
             ImageSendMessage(
-                original_content_url=f"data:image/jpeg;base64,{image_data}",
-                preview_image_url=f"data:image/jpeg;base64,{image_data}",
+                original_content_url=cloudinary_url,
+                preview_image_url=cloudinary_url,
             ),
         )
     elif reply:
