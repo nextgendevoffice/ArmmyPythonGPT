@@ -36,11 +36,12 @@ def handle_message(event):
         if prompt:
             image_url = generate_image(prompt)
             if image_url:
-                cloudinary_url = upload_image_to_cloudinary(image_url)
+                image_data = upload_image_to_cloudinary(image_url)
+                cloudinary_url = image_data['url'] if image_data else None  # Add this line
     else:
         reply = generate_response(text)
 
-    if cloudinary_url:
+    if cloudinary_url:  # Update this line
         line_bot_api.reply_message(
             event.reply_token,
             ImageSendMessage(
@@ -53,3 +54,4 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=reply),
         )
+
