@@ -1,8 +1,8 @@
 from flask import Blueprint, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
-from .chatgpt import generate_response, generate_image, upload_image_to_cloudinary
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from .chatgpt import generate_response
 import os
 
 line_bp = Blueprint('line_bot', __name__)
@@ -28,30 +28,5 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     text = event.message.text
-    reply = None
-    image_data = None
-    cloudinary_url = None  # Add this line
-
-    if text.startswith('/img'):
-        prompt = text[4:].strip()
-        if prompt:
-            image_url = generate_image(prompt)
-            if image_url:
-                image_data = upload_image_to_cloudinary(image_url)
-                cloudinary_url = image_data['url'] if image_data else None
-    else:
-        reply = generate_response(text)
-
-    if cloudinary_url:
-        line_bot_api.reply_message(
-            event.reply_token,
-            ImageSendMessage(
-                original_content_url=cloudinary_url,
-                preview_image_url=cloudinary_url,
-            ),
-        )
-    elif reply:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply),
-        )
+    response = generate_response(text)
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
