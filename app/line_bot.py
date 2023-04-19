@@ -1,5 +1,6 @@
 import os
 import logging
+import sqlite3
 import openai
 from flask import Blueprint, request, abort
 from linebot import LineBotApi, WebhookHandler
@@ -30,6 +31,30 @@ def generate_dalle_image(prompt):
     image_url = response['data'][0]['url']
     return image_url
 
+def init_db():
+    conn = sqlite3.connect('tokens.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY, tokens INT)''')
+    conn.commit()
+    conn.close()
+
+def get_user_tokens(user_id):
+    conn = sqlite3.connect('tokens.db')
+    c = conn.cursor()
+    c.execute('''SELECT tokens FROM users WHERE user_id = ?''', (user_id,))
+    tokens = c.fetchone()
+    conn.close()
+    return tokens[0] if tokens else None
+
+def update_user_tokens(user_id, new_tokens):
+    conn = sqlite3.connect('tokens.db')
+    c = conn.cursor()
+    c.execute('''INSERT OR REPLACE INTO users (user_id, tokens) VALUES (?, ?)''', (user_id, new_tokens))
+    conn.commit()
+    conn.close()
+
+init_db()
+
 @line_bp.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -46,7 +71,13 @@ def callback():
 def handle_message(event):
     logging.info("Handling event: %s", event)
 
+    user_id = event.source.user_id
     text = event.message.text
+    tokens = get_user_tokens(user_id)
+
+    if tokens is None:
+        tokens = 3000
+        update_user_tokens(user_id, tokens)
 
     if text.startswith('/img'):
         prompt = text[4:].strip()
@@ -57,3 +88,11 @@ def handle_message(event):
         response = generate_response(text)
         logging.info("Generated response: %s", response)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
+
+    tokens_used = len(response)
+    new_tokens = tokens - tokens_used
+
+    if new_tokens < 0:
+        line_bot_api.push_message(user_id, TextSendMessage(text="You've used all your free tokens. Please purchase more tokens to continue using the service."))
+    else:
+        update_user_tokens(user_id, new_tokens)
