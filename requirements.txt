@@ -1,4 +1,6 @@
-Flask==2.1.1
-line-bot-sdk==2.4.2
-requests>=2.27.1
-gunicorn==20.1.0
+line-bot-sdk
+openai
+Flask
+gunicorn
+requests
+cachetools
