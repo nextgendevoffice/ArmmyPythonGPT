@@ -1,9 +1,9 @@
 from flask import Flask
 
-def create_app():
-    app = Flask(__name__)
+app = Flask(__name__)
 
-    from .line_bot import line_bp
-    app.register_blueprint(line_bp)
+from .line_bot import line_bp
+app.register_blueprint(line_bp)
 
-    return app
+def create_app(environ, start_response):
+    return app(environ, start_response)
