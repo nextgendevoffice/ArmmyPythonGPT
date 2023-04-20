@@ -61,4 +61,12 @@ def add_token(user_id, coupon_code):
     # Log History add token by user
 def get_token_history(user_id):
     token_history = db.coupons.find({"user_id": user_id})
-    return list(token_history)
+    formatted_history = []
+    for item in token_history:
+        formatted_item = {
+            "coupon_code": item["coupon_code"],
+            "tokens": item["tokens"],
+            "date": item["_id"].generation_time.strftime("%d/%m/%Y %H:%M")
+        }
+        formatted_history.append(formatted_item)
+    return formatted_history
