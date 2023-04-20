@@ -12,7 +12,8 @@ import random
 import string
 from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history)
 from .database import db
-
+from datetime import datetime
+import pytz
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -102,7 +103,10 @@ def add_token(user_id, coupon_code):
         db.users.insert_one({"user_id": user_id, "tokens": new_tokens})
 
     # Log the coupon usage
-    db.coupons.update_one({"coupon_code": coupon_code}, {"$set": {"user_id": user_id}})
+    used_at_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    thailand_tz = pytz.timezone('Asia/Bangkok')
+    used_at = used_at_utc.astimezone(thailand_tz)
+    db.coupons.update_one({"coupon_code": coupon_code}, {"$set": {"user_id": user_id, "used_at": used_at}})
 
     return f"คุณเติม Token จำนวน {coupon['tokens']} tokens. เรียบร้อยแล้ว"
 
