@@ -84,29 +84,28 @@ def create_coupon(tokens):
 
 
 def add_token(user_id, coupon_code):
-    session = Session()
-    coupon = session.query(Coupons).filter(Coupons.coupon_code == coupon_code).first()
+    coupon = db.coupons.find_one({"coupon_code": coupon_code})
 
     if not coupon:
-        session.close()
         return "Invalid coupon code."
 
-    usage = session.query(CouponUsage).filter(CouponUsage.coupon_id == coupon.id).first()
-    if usage:
-        session.close()
+    if "user_id" in coupon:
         return "Coupon has already been used."
 
     # Update user's tokens here
-    user = session.query(User).filter(User.id == user_id).first()
-    user.tokens += coupon.tokens
+    user = db.users.find_one({"user_id": user_id})
+    if user:
+        new_tokens = user["tokens"] + coupon["tokens"]
+        db.users.update_one({"user_id": user_id}, {"$set": {"tokens": new_tokens}})
+    else:
+        new_tokens = 3000 + coupon["tokens"]
+        db.users.insert_one({"user_id": user_id, "tokens": new_tokens})
 
     # Log the coupon usage
-    coupon_usage = CouponUsage(coupon_id=coupon.id, user_id=user_id)
-    session.add(coupon_usage)
-    session.commit()
-    session.close()
+    db.coupons.update_one({"coupon_code": coupon_code}, {"$set": {"user_id": user_id}})
 
-    return f"Successfully added {coupon.tokens} tokens."
+    return f"Successfully added {coupon['tokens']} tokens."
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -147,7 +146,7 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
     elif text.startswith('/addtoken'):
         _, coupon_code = text.split()
-        response = add_token(user_id, coupon_code)
+        response = add_token(user_id, coupon_code)  # Use the add_token function from database.py
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
     else:
         response = generate_response(text)
