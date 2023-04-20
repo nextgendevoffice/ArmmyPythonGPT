@@ -61,16 +61,15 @@ def handle_message(event):
         image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
         line_bot_api.reply_message(event.reply_token, image_message)
     elif text.startswith('/tokens'):
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"You have {tokens} tokens remaining."))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"ปัจจุบันคุณมี {tokens} tokens."))
     else:
         response = generate_response(text)
         logging.info("Generated response: %s", response)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
-
         tokens_used = len(response)
         new_tokens = tokens - tokens_used
 
         if new_tokens < 0:
-            line_bot_api.push_message(user_id, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
         else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
             update_user_tokens(user_id, new_tokens)
