@@ -11,6 +11,7 @@ from . import image_generation_model
 import random
 import string
 from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token)
+from .database import db
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -76,13 +77,11 @@ def generate_coupon_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
 def create_coupon(tokens):
-    session = Session()
     coupon_code = generate_coupon_code()
-    coupon = Coupons(coupon_code=coupon_code, tokens=tokens)
-    session.add(coupon)
-    session.commit()
-    session.close()
+    coupon = {"coupon_code": coupon_code, "tokens": tokens}
+    db.coupons.insert_one(coupon)  # Use the db object from your database.py file
     return coupon_code
+
 
 def add_token(user_id, coupon_code):
     session = Session()
