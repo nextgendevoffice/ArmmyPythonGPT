@@ -18,7 +18,7 @@ from sqlalchemy import create_engine
 from .database import Coupons, CouponUsage, User
 
 # Set up the database connection
-DATABASE_URL = os.environ('MONGO_URI')
+DATABASE_URL = os.environ['MONGO_URI']
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
