@@ -6,14 +6,11 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
 from .chatgpt import generate_response
-from .database import get_user_tokens, update_user_tokens
-from .database import save_chat_history, get_chat_history
 from . import thai_translation_model
 from . import image_generation_model
 import random
 import string
-from .database import Session,Coupons,CouponUsage,User
-
+from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token)
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
