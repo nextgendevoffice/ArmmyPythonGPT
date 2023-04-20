@@ -127,7 +127,7 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"ปัจจุบันคุณมี {tokens} tokens."))
     elif text.startswith('/user'):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"User ID ของคุณคือ: {user_id}"))
-    elif text.startswith('/history'):
+    elif text.strip() == '/history':
         chat_history = get_chat_history(user_id)
         history_text = "\n\n".join([f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history])
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
@@ -147,7 +147,7 @@ def handle_message(event):
         _, coupon_code = text.split()
         response = add_token(user_id, coupon_code)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
-    elif text.startswith('/topup'):
+    elif text.strip() == '/historytopup':
         token_history = get_token_history(user_id)
         if token_history:
             history_text = "\n\n".join([f"Coupon Code: {item['coupon_code']}\nTokens Added: {item['tokens']}" for item in token_history])
