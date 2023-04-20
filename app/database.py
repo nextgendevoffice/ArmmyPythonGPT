@@ -1,7 +1,7 @@
 import os
 from pymongo import MongoClient
 from datetime import datetime
-import pytz
+
 MONGO_URI = os.environ["MONGO_URI"]
 client = MongoClient(MONGO_URI)
 db = client["admin"]
@@ -61,16 +61,4 @@ def add_token(user_id, coupon_code):
     # Log History add token by user
 def get_token_history(user_id):
     token_history = db.coupons.find({"user_id": user_id})
-    formatted_history = []
-    for item in token_history:
-        used_at_utc = item["used_at"].replace(tzinfo=pytz.UTC)
-        thailand_tz = pytz.timezone('Asia/Bangkok')
-        used_at = used_at_utc.astimezone(thailand_tz)
-        formatted_item = {
-            "coupon_code": item["coupon_code"],
-            "tokens": item["tokens"],
-            "date": used_at.strftime("%d/%m/%Y %H:%M")
-        }
-        formatted_history.append(formatted_item)
-    return formatted_history
-
+    return list(token_history)
