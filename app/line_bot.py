@@ -147,13 +147,16 @@ def handle_message(event):
         _, coupon_code = text.split()
         response = add_token(user_id, coupon_code)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
-    elif text.strip() == '/historytopup':
+    elif text.startswith('/topuphistory'):
         token_history = get_token_history(user_id)
         if token_history:
-            history_text = "\n\n".join([f"Coupon Code: {item['coupon_code']}\nTokens Added: {item['tokens']}" for item in token_history])
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
+            history_text = "\n\n".join([
+            f"Coupon Code: {item['coupon_code']}\nTokens Added: {item['tokens']}\nDate: {item['date']}"
+            for item in token_history])
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
         else:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
+
     else:
         response = generate_response(text)
         save_chat_history(user_id, text, response)
