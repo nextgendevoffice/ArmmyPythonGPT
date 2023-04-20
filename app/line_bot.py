@@ -12,7 +12,7 @@ from . import thai_translation_model
 from . import image_generation_model
 import random
 import string
-from .database import Coupons, CouponUsage, User
+
 
 
 
