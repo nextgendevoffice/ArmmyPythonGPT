@@ -150,8 +150,7 @@ def handle_message(event):
     elif text.strip() == '/topuphistory':
         token_history = get_token_history(user_id)
         if token_history:
-            history_text = "\n\n".join([
-            f"Coupon Code: {item['coupon_code']}\nTokens Added: {item['tokens']}\nDate: {item['date']}"for item in token_history])
+            history_text = "\n\n".join([f"Coupon Code: {item['coupon_code']}\nTokens Added: {item['tokens']}" for item in token_history])
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
