@@ -7,6 +7,9 @@ client = MongoClient(MONGO_URI)
 db = client["admin"]
 users = db["users"]
 
+def get_db():
+    return db
+
 def get_user_tokens(user_id):
     user = users.find_one({"user_id": user_id})
     return user["tokens"] if user else None
