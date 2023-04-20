@@ -62,6 +62,8 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, image_message)
     elif text.startswith('/tokens'):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"ปัจจุบันคุณมี {tokens} tokens."))
+    elif text.startswith('/user'):
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"User ID ของคุณคือ: {user_id}"))
     else:
         response = generate_response(text)
         logging.info("Generated response: %s", response)
