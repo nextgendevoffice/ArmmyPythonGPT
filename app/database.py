@@ -1,11 +1,7 @@
 import os
 from pymongo import MongoClient
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 
-Base = declarative_base()
 MONGO_URI = os.environ["MONGO_URI"]
 client = MongoClient(MONGO_URI)
 db = client["admin"]
@@ -35,22 +31,29 @@ def get_chat_history(user_id):
     db = get_db()
     return list(db.chat_history.find({"user_id": user_id}).sort("timestamp", -1))
 
-class Coupons(Base):
-    __tablename__ = 'coupons'
-    id = Column(Integer, primary_key=True)
-    coupon_code = Column(String, unique=True)
-    tokens = Column(Integer)
+def create_coupon(tokens):
+    coupon_code = generate_coupon_code()
+    coupon = {"coupon_code": coupon_code, "tokens": tokens}
+    db.coupons.insert_one(coupon)
+    return coupon_code
 
-class CouponUsage(Base):
-    __tablename__ = 'coupon_usage'
-    id = Column(Integer, primary_key=True)
-    coupon_id = Column(Integer, ForeignKey('coupons.id'))
-    user_id = Column(String)
-    
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(String, primary_key=True)
-    tokens = Column(Integer, default=3000)
+def add_token(user_id, coupon_code):
+    coupon = db.coupons.find_one({"coupon_code": coupon_code})
 
-    def __repr__(self):
-        return f"<User(id='{self.id}', tokens={self.tokens})>"
+    if not coupon:
+        return "Invalid coupon code."
+
+    usage = db.coupon_usage.find_one({"coupon_id": coupon["_id"]})
+    if usage:
+        return "Coupon has already been used."
+
+    # Update user's tokens here
+    user = users.find_one({"user_id": user_id})
+    new_tokens = user["tokens"] + coupon["tokens"]
+    users.update_one({"user_id": user_id}, {"$set": {"tokens": new_tokens}})
+
+    # Log the coupon usage
+    coupon_usage = {"coupon_id": coupon["_id"], "user_id": user_id}
+    db.coupon_usage.insert_one(coupon_usage)
+
+    return f"Successfully added {coupon['tokens']} tokens."

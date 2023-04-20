@@ -13,14 +13,9 @@ from . import image_generation_model
 import random
 import string
 from .database import Coupons, CouponUsage
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
 from .database import Coupons, CouponUsage, User
 
-# Set up the database connection
-DATABASE_URL = os.environ['MONGO_URI']
-engine = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -138,6 +133,7 @@ def handle_message(event, text):
         _, coupon_code = text.split()
         response = add_token(user_id, coupon_code)
         # Send response as a message to the user
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
