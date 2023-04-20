@@ -7,6 +7,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
 from .chatgpt import generate_response
 from .database import get_user_tokens, update_user_tokens
+from .database import save_chat_history, get_chat_history
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -64,8 +65,13 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"ปัจจุบันคุณมี {tokens} tokens."))
     elif text.startswith('/user'):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"User ID ของคุณคือ: {user_id}"))
+    elif text.startswith('/history'):
+        chat_history = get_chat_history(user_id)
+        history_text = "\n\n".join([f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history])
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
     else:
         response = generate_response(text)
+        save_chat_history(user_id, text, response)  # Save the chat history
         logging.info("Generated response: %s", response)
         tokens_used = len(response)
         new_tokens = tokens - tokens_used
