@@ -8,8 +8,9 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSend
 from .chatgpt import generate_response
 from .database import get_user_tokens, update_user_tokens
 from .database import save_chat_history, get_chat_history
-import thai_translation_model
-import image_generation_model
+from . import thai_translation_model
+from . import image_generation_model
+
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
