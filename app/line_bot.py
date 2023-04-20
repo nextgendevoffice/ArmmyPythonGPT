@@ -112,28 +112,6 @@ def add_token(user_id, coupon_code):
 
     return f"Successfully added {coupon.tokens} tokens."
 
-def handle_message(event, text):
-    user_id = event.source.user_id
-
-    if text.startswith('/createcoupon') and check_admin(user_id):
-        _, num_coupons, tokens = text.split()
-        num_coupons = int(num_coupons)
-        tokens = int(tokens)
-
-        created_coupons = []
-        for _ in range(num_coupons):
-            coupon_code = create_coupon(tokens)
-            created_coupons.append(coupon_code)
-
-        reply_text = f"Created {num_coupons} coupons with {tokens} tokens each:\n" + "\n".join(created_coupons)
-        # Send reply_text as a message to the admin
-
-    elif text.startswith('/addtoken'):
-        _, coupon_code = text.split()
-        response = add_token(user_id, coupon_code)
-        # Send response as a message to the user
-
-
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     logging.info("Handling event: %s", event)
@@ -159,6 +137,22 @@ def handle_message(event):
         chat_history = get_chat_history(user_id)
         history_text = "\n\n".join([f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history])
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
+    elif text.startswith('/createcoupon') and check_admin(user_id):
+        _, num_coupons, tokens = text.split()
+        num_coupons = int(num_coupons)
+        tokens = int(tokens)
+
+        created_coupons = []
+        for _ in range(num_coupons):
+            coupon_code = create_coupon(tokens)
+            created_coupons.append(coupon_code)
+
+        reply_text = f"Created {num_coupons} coupons with {tokens} tokens each:\n" + "\n".join(created_coupons)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+    elif text.startswith('/addtoken'):
+        _, coupon_code = text.split()
+        response = add_token(user_id, coupon_code)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
     else:
         response = generate_response(text)
         save_chat_history(user_id, text, response)  # Save the chat history
