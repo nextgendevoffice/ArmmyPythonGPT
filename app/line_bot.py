@@ -10,8 +10,17 @@ from .database import get_user_tokens, update_user_tokens
 from .database import save_chat_history, get_chat_history
 from . import thai_translation_model
 from . import image_generation_model
+import random
+import string
+from .database import Coupons, CouponUsage
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from .database import Coupons, CouponUsage, User
 
-
+# Set up the database connection
+DATABASE_URL = os.environ.get('DATABASE_URL')
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -41,6 +50,11 @@ def generate_image_from_thai_text(thai_text):
     # Post-process and return the generated image
     return image
 
+# line_bot.py
+def check_admin(user_id):
+    admin_user_id = 'U983968ed313854758775d4b8c05b6f8a'
+    return user_id == admin_user_id
+
 
 def generate_dalle_image(prompt):
     response = openai.Image.create(
@@ -64,6 +78,66 @@ def callback():
         abort(400)
 
     return 'OK'
+
+
+# Generate a random coupon code
+def generate_coupon_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+def create_coupon(tokens):
+    session = Session()
+    coupon_code = generate_coupon_code()
+    coupon = Coupons(coupon_code=coupon_code, tokens=tokens)
+    session.add(coupon)
+    session.commit()
+    session.close()
+    return coupon_code
+
+def add_token(user_id, coupon_code):
+    session = Session()
+    coupon = session.query(Coupons).filter(Coupons.coupon_code == coupon_code).first()
+
+    if not coupon:
+        session.close()
+        return "Invalid coupon code."
+
+    usage = session.query(CouponUsage).filter(CouponUsage.coupon_id == coupon.id).first()
+    if usage:
+        session.close()
+        return "Coupon has already been used."
+
+    # Update user's tokens here
+    user = session.query(User).filter(User.id == user_id).first()
+    user.tokens += coupon.tokens
+
+    # Log the coupon usage
+    coupon_usage = CouponUsage(coupon_id=coupon.id, user_id=user_id)
+    session.add(coupon_usage)
+    session.commit()
+    session.close()
+
+    return f"Successfully added {coupon.tokens} tokens."
+
+def handle_message(event, text):
+    user_id = event.source.user_id
+
+    if text.startswith('/createcoupon') and check_admin(user_id):
+        _, num_coupons, tokens = text.split()
+        num_coupons = int(num_coupons)
+        tokens = int(tokens)
+
+        created_coupons = []
+        for _ in range(num_coupons):
+            coupon_code = create_coupon(tokens)
+            created_coupons.append(coupon_code)
+
+        reply_text = f"Created {num_coupons} coupons with {tokens} tokens each:\n" + "\n".join(created_coupons)
+        # Send reply_text as a message to the admin
+
+    elif text.startswith('/addtoken'):
+        _, coupon_code = text.split()
+        response = add_token(user_id, coupon_code)
+        # Send response as a message to the user
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
