@@ -8,8 +8,6 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSend
 from .chatgpt import generate_response
 from .database import get_user_tokens, update_user_tokens
 from .database import save_chat_history, get_chat_history
-import thai_translation_model
-import image_generation_model
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -23,22 +21,6 @@ line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 openai.api_key = os.environ['OPENAI_API_KEY']
-
-def generate_image_from_thai_text(thai_text):
-    # Preprocess Thai text input for translation model
-    input_data = thai_translation_model.preprocess(thai_text)
-    
-    # Translate Thai text to English
-    english_text = thai_translation_model.translate(input_data)
-    
-    # Preprocess English text input for image generation model
-    input_data = image_generation_model.preprocess(english_text)
-    
-    # Generate image using the English text
-    image = image_generation_model.generate_image(input_data)
-    
-    # Post-process and return the generated image
-    return image
 
 def generate_dalle_image(prompt):
     response = openai.Image.create(
@@ -77,7 +59,7 @@ def handle_message(event):
 
     if text.startswith('/img'):
         prompt = text[4:].strip()
-        image_url = generate_image_from_thai_text(prompt)  # Change this line
+        image_url = generate_dalle_image(prompt)
         image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
         line_bot_api.reply_message(event.reply_token, image_message)
     elif text.startswith('/tokens'):
