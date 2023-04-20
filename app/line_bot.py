@@ -27,18 +27,19 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 def generate_image_from_thai_text(thai_text):
     # Preprocess Thai text input for translation model
     input_data = thai_translation_model.preprocess(thai_text)
-    
+
     # Translate Thai text to English
     english_text = thai_translation_model.translate(input_data)
-    
+
     # Preprocess English text input for image generation model
     input_data = image_generation_model.preprocess(english_text)
-    
+
     # Generate image using the English text
-    image = image_generation_model.generate_image(input_data)
-    
+    image = image_generation_model.generate_image(openai.api_key, input_data)
+
     # Post-process and return the generated image
     return image
+
 
 def generate_dalle_image(prompt):
     response = openai.Image.create(
