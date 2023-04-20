@@ -10,7 +10,7 @@ from . import thai_translation_model
 from . import image_generation_model
 import random
 import string
-from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token)
+from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history)
 from .database import db
 
 
@@ -87,10 +87,10 @@ def add_token(user_id, coupon_code):
     coupon = db.coupons.find_one({"coupon_code": coupon_code})
 
     if not coupon:
-        return "Invalid coupon code."
+        return "ไม่พบคูปองใบนี้."
 
     if "user_id" in coupon:
-        return "Coupon has already been used."
+        return "คูปองใบนี้ถุกใช้งานแล้ว."
 
     # Update user's tokens here
     user = db.users.find_one({"user_id": user_id})
@@ -104,7 +104,7 @@ def add_token(user_id, coupon_code):
     # Log the coupon usage
     db.coupons.update_one({"coupon_code": coupon_code}, {"$set": {"user_id": user_id}})
 
-    return f"Successfully added {coupon['tokens']} tokens."
+    return f"คุณเติม Token จำนวน {coupon['tokens']} tokens. เรียบร้อยแล้ว"
 
 
 @handler.add(MessageEvent, message=TextMessage)
@@ -121,7 +121,7 @@ def handle_message(event):
 
     if text.startswith('/img'):
         prompt = text[4:].strip()
-        image_url = generate_image_from_thai_text(prompt)  # Change this line
+        image_url = generate_image_from_thai_text(prompt)
         image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
         line_bot_api.reply_message(event.reply_token, image_message)
     elif text.startswith('/tokens'):
@@ -142,19 +142,26 @@ def handle_message(event):
             coupon_code = create_coupon(tokens)
             created_coupons.append(coupon_code)
 
-        reply_text = f"Created {num_coupons} coupons with {tokens} tokens each:\n" + "\n".join(created_coupons)
+        reply_text = f"สร้าง {num_coupons} คูปอง จำนวน {tokens} tokens เรียบร้อยแล้ว:\n" + "\n".join(created_coupons)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
     elif text.startswith('/addtoken'):
         _, coupon_code = text.split()
-        response = add_token(user_id, coupon_code)  # Use the add_token function from database.py
+        response = add_token(user_id, coupon_code)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
+    elif text.startswith('/historytokens'):
+        token_history = get_token_history(user_id)
+        if token_history:
+            history_text = "\n\n".join([f"Coupon Code: {item['coupon_code']}\nTokens Added: {item['tokens']}" for item in token_history])
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
     else:
         response = generate_response(text)
-        save_chat_history(user_id, text, response)  # Save the chat history
+        save_chat_history(user_id, text, response)
         logging.info("Generated response: %s", response)
         tokens_used = len(response)
         new_tokens = tokens - tokens_used
-
+        
         if new_tokens < 0:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
         else:

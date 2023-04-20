@@ -57,3 +57,8 @@ def add_token(user_id, coupon_code):
     db.coupon_usage.insert_one(coupon_usage)
 
     return f"Successfully added {coupon['tokens']} tokens."
+
+    # Log History add token by user
+def get_token_history(user_id):
+    token_history = db.coupons.find({"user_id": user_id})
+    return list(token_history)
