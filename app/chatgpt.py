@@ -19,8 +19,10 @@ def generate_response(prompt):
     )
 
     answer = response.choices[0].message['content'].strip()
-    prompt_tokens = response.choices[0].message['prompt_tokens']
-    completion_tokens = response.choices[0].message['completion_tokens']
-    total_tokens = response.choices[0].message['total_tokens']
+    
+    # Calculate token counts manually
+    prompt_tokens = openai.Tokenizer.tokenize(prompt)['n_tokens']
+    completion_tokens = openai.Tokenizer.tokenize(answer)['n_tokens']
+    total_tokens = prompt_tokens + completion_tokens
 
     return answer, prompt_tokens, completion_tokens, total_tokens
