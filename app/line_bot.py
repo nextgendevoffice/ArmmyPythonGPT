@@ -119,19 +119,19 @@ def handle_message(event):
         update_user_tokens(user_id, tokens)
 
     if text.startswith('/img'):
-    prompt = text[4:].strip()
-    image_url = generate_image_from_thai_text(prompt)
-    image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
+        prompt = text[4:].strip()
+        image_url = generate_image_from_thai_text(prompt)
+        image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
 
-    # Define a fixed amount of tokens to be deducted for each generated image
-    tokens_used = 1000
-    new_tokens = tokens - tokens_used
-    # Check if the user has enough tokens to generate an image
-    if new_tokens < 0:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณไม่มีเครดิตพอที่จะสร้างภาพ กรุณาเติมเครดิตก่อน"))
-    else:
-        line_bot_api.reply_message(event.reply_token, image_message)
-        update_user_tokens(user_id, new_tokens)        
+        # Define a fixed amount of tokens to be deducted for each generated image
+        tokens_used = 1000
+        new_tokens = tokens - tokens_used
+        # Check if the user has enough tokens to generate an image
+        if new_tokens < 0:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณไม่มีเครดิตพอที่จะสร้างภาพ กรุณาเติมเครดิตก่อน"))
+        else:
+            line_bot_api.reply_message(event.reply_token, image_message)
+            update_user_tokens(user_id, new_tokens)
     elif text.startswith('/tokens'):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"ปัจจุบันคุณมี {tokens} tokens."))
     elif text.startswith('/user'):
@@ -164,14 +164,14 @@ def handle_message(event):
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
     else:
-    response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
-    save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)
-    logging.info("Generated response: %s", response)
-    tokens_used = total_tokens
-    new_tokens = tokens - tokens_used
+        response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
+        save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)
+        logging.info("Generated response: %s", response)
+        tokens_used = total_tokens
+        new_tokens = tokens - tokens_used
 
-    if new_tokens < 0:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
-    else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
-        update_user_tokens(user_id, new_tokens)
+        if new_tokens < 0:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
+            update_user_tokens(user_id, new_tokens)
