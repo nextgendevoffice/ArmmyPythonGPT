@@ -122,7 +122,7 @@ def handle_message(event):
     if tokens is None:
         tokens = 3000
         update_user_tokens(user_id, tokens)
-        
+
         # If the input text has more than 15 characters, start the waiting message thread
     if len(text) > 15:
         waiting_message_thread = Thread(target=send_waiting_message, args=(user_id,))
@@ -181,7 +181,7 @@ def handle_message(event):
         new_tokens = tokens - tokens_used
 
         if new_tokens < 0:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!! แชร์โพสเพื่อรับ Token ฟรี : https://bit.ly/3AeNG6y"))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
             update_user_tokens(user_id, new_tokens)
