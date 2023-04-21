@@ -143,7 +143,7 @@ def handle_message(event):
 
         reply_text = f"สร้าง {num_coupons} คูปอง จำนวน {tokens} tokens เรียบร้อยแล้ว:\n" + "\n".join(created_coupons)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-    elif text.startswith('/addtoken'):
+    elif text.strip() == '/addcoupon':
         _, coupon_code = text.split()
         response = add_token(user_id, coupon_code)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
