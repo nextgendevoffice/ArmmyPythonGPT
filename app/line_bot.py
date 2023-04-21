@@ -117,7 +117,10 @@ def handle_message(event):
     if tokens is None:
         tokens = 3000
         update_user_tokens(user_id, tokens)
-
+    # Send waiting message immediately
+    waiting_message = "รออับดุลคิดแป๊บน่ะจ้ะ!!"
+    line_bot_api.push_message(user_id, TextSendMessage(text=waiting_message))
+    
     if text.startswith('/img'):
         prompt = text[4:].strip()
         image_url = generate_image_from_thai_text(prompt)
