@@ -12,6 +12,7 @@ import random
 import string
 from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history)
 from .database import db
+from threading import Thread
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -106,6 +107,10 @@ def add_token(user_id, coupon_code):
 
     return f"คุณเติม Token จำนวน {coupon['tokens']} tokens. เรียบร้อยแล้ว"
 
+def send_waiting_message(user_id):
+    waiting_message = "รออับดุลคิดแป๊บน่ะจ้ะ!!"
+    line_bot_api.push_message(user_id, TextSendMessage(text=waiting_message))
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     logging.info("Handling event: %s", event)
@@ -117,10 +122,12 @@ def handle_message(event):
     if tokens is None:
         tokens = 3000
         update_user_tokens(user_id, tokens)
-    # Send waiting message immediately
-    waiting_message = "รออับดุลคิดแป๊บน่ะจ้ะ!!"
-    line_bot_api.push_message(user_id, TextSendMessage(text=waiting_message))
-    
+        
+        # If the input text has more than 15 characters, start the waiting message thread
+    if len(text) > 15:
+        waiting_message_thread = Thread(target=send_waiting_message, args=(user_id,))
+        waiting_message_thread.start()
+
     if text.startswith('/img'):
         prompt = text[4:].strip()
         image_url = generate_image_from_thai_text(prompt)
