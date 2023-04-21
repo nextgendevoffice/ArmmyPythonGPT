@@ -17,12 +17,15 @@ def get_user_tokens(user_id):
 def update_user_tokens(user_id, new_tokens):
     users.update_one({"user_id": user_id}, {"$set": {"tokens": new_tokens}}, upsert=True)
 
-def save_chat_history(user_id, question, answer):
+def save_chat_history(user_id, question, answer, prompt_tokens, completion_tokens, total_tokens):
     db = get_db()
     chat_history = {
         "user_id": user_id,
         "question": question,
         "answer": answer,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
         "timestamp": datetime.utcnow()
     }
     db.chat_history.insert_one(chat_history)

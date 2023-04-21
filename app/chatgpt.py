@@ -18,4 +18,9 @@ def generate_response(prompt):
         temperature=0.7,
     )
 
-    return response.choices[0].message['content'].strip()
+    answer = response.choices[0].message['content'].strip()
+    prompt_tokens = response.choices[0]['prompt_tokens']
+    completion_tokens = response.choices[0]['completion_tokens']
+    total_tokens = response.choices[0]['total_tokens']
+
+    return answer, prompt_tokens, completion_tokens, total_tokens

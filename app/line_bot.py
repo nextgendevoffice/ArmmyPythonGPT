@@ -119,10 +119,19 @@ def handle_message(event):
         update_user_tokens(user_id, tokens)
 
     if text.startswith('/img'):
-        prompt = text[4:].strip()
-        image_url = generate_image_from_thai_text(prompt)
-        image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
+    prompt = text[4:].strip()
+    image_url = generate_image_from_thai_text(prompt)
+    image_message = ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
+
+    # Define a fixed amount of tokens to be deducted for each generated image
+    tokens_used = 1000
+    new_tokens = tokens - tokens_used
+    # Check if the user has enough tokens to generate an image
+    if new_tokens < 0:
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณไม่มีเครดิตพอที่จะสร้างภาพ กรุณาเติมเครดิตก่อน"))
+    else:
         line_bot_api.reply_message(event.reply_token, image_message)
+        update_user_tokens(user_id, new_tokens)        
     elif text.startswith('/tokens'):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"ปัจจุบันคุณมี {tokens} tokens."))
     elif text.startswith('/user'):
