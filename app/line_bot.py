@@ -164,14 +164,14 @@ def handle_message(event):
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
     else:
-        response = generate_response(text)
-        save_chat_history(user_id, text, response)
-        logging.info("Generated response: %s", response)
-        tokens_used = len(response)
-        new_tokens = tokens - tokens_used
-        
-        if new_tokens < 0:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
-        else:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
-            update_user_tokens(user_id, new_tokens)
+    response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
+    save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)
+    logging.info("Generated response: %s", response)
+    tokens_used = total_tokens
+    new_tokens = tokens - tokens_used
+
+    if new_tokens < 0:
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="คุณใช้ Token 3,000 Token ฟรี หมดแล้ว. หากคุณต้องการใช้งานกรุณาเติมเงินเพื่อใช้งานอย่างต่อเนื่อง!!"))
+    else:
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
+        update_user_tokens(user_id, new_tokens)
