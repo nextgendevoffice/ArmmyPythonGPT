@@ -77,27 +77,11 @@ def is_admin(user_id):
 def get_total_users():
     return users.count_documents({})
 
-def get_tokens_used(start_date, end_date):
-    start_date_obj = datetime.strptime(start_date, "%d-%m-%Y")
-    end_date_obj = datetime.strptime(end_date, "%d-%m-%Y")
-    tokens_used = list(db.chat_history.aggregate([
-        {
-            "$match": {
-                "timestamp": {
-                    "$gte": start_date_obj,
-                    "$lte": end_date_obj
-                }
-            }
-        },
-        {
-            "$group": {
-                "_id": None,
-                "total_tokens": {"$sum": "$total_tokens"}
-            }
-        }
-    ]))
-
-    if not tokens_used:
-        return 0
-
-    return tokens_used[0]["total_tokens"]
+def get_total_tokens_used(start_date, end_date):
+    start_date = datetime.strptime(start_date, "%d-%m-%Y")
+    end_date = datetime.strptime(end_date, "%d-%m-%Y")
+    
+    chat_history = db.chat_history.find({"timestamp": {"$gte": start_date, "$lte": end_date}})
+    total_tokens = sum([item["total_tokens"] for item in chat_history])
+    
+    return total_tokens
