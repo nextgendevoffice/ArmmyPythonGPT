@@ -176,7 +176,7 @@ def handle_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
-    elif text.strip() == '/addadmin':
+    elif text.startswith('/addadmin'):
         if check_admin(user_id):
             new_admin_id = text.split()[1]
             add_admin(new_admin_id)
