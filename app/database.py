@@ -1,6 +1,6 @@
 import os
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timedelta
 
 MONGO_URI = os.environ["MONGO_URI"]
 client = MongoClient(MONGO_URI)
@@ -79,9 +79,10 @@ def get_total_users():
 
 def get_total_tokens_used(start_date, end_date):
     start_date = datetime.strptime(start_date, "%d-%m-%Y")
-    end_date = datetime.strptime(end_date, "%d-%m-%Y")
+    end_date = datetime.strptime(end_date, "%d-%m-%Y") + timedelta(days=1)  # Include the end date in the search
     
-    chat_history = db.chat_history.find({"timestamp": {"$gte": start_date, "$lte": end_date}})
+    chat_history = db.chat_history.find({"timestamp": {"$gte": start_date, "$lt": end_date}})
     total_tokens = sum([item["total_tokens"] for item in chat_history])
     
     return total_tokens
+
