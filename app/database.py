@@ -73,3 +73,31 @@ def add_admin(user_id):
 
 def is_admin(user_id):
     return db.admins.find_one({"user_id": user_id}) is not None
+
+def get_total_users():
+    return users.count_documents({})
+
+def get_tokens_used(start_date, end_date):
+    start_date_obj = datetime.strptime(start_date, "%d-%m-%Y")
+    end_date_obj = datetime.strptime(end_date, "%d-%m-%Y")
+    tokens_used = list(db.chat_history.aggregate([
+        {
+            "$match": {
+                "timestamp": {
+                    "$gte": start_date_obj,
+                    "$lte": end_date_obj
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total_tokens": {"$sum": "$total_tokens"}
+            }
+        }
+    ]))
+
+    if not tokens_used:
+        return 0
+
+    return tokens_used[0]["total_tokens"]

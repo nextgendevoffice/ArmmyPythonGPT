@@ -10,7 +10,7 @@ from . import thai_translation_model
 from . import image_generation_model
 import random
 import string
-from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history, add_admin, is_admin)
+from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history, add_admin, is_admin, get_total_users, get_tokens_used)
 from .database import db
 from threading import Thread
 
@@ -183,6 +183,16 @@ def handle_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Admin {new_admin_id} added successfully."))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="You do not have permission to use this command."))
+    elif text.strip() == '/totaluser' and check_admin(user_id):
+            total_users = get_total_users()
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Total number of users: {total_users}"))
+    elif text.startswith('/usetoken') and check_admin(user_id):
+            try:
+                _, start_date, end_date = text.split()
+                tokens_used = get_tokens_used(start_date, end_date)
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Tokens used between {start_date} and {end_date}: {tokens_used}"))
+            except ValueError:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Invalid date format. Please use dd-mm-yyyy format."))
     else:
         response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
         save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)
