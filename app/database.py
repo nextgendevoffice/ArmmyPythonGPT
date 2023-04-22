@@ -78,8 +78,8 @@ def get_total_users():
     return users.count_documents({})
 
 def get_total_tokens_used(start_date, end_date):
-    start_date = datetime.strptime(start_date, "%d-%m-%Y")
-    end_date = datetime.strptime(end_date, "%d-%m-%Y") + timedelta(days=1)  # Include the end date in the search
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)  # Include the end date in the search
     
     chat_history = db.chat_history.find({"timestamp": {"$gte": start_date, "$lt": end_date}})
     total_tokens = sum([item.get("total_tokens", 0) for item in chat_history])
