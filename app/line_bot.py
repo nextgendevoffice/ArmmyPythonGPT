@@ -14,7 +14,6 @@ from .database import (get_user_tokens, update_user_tokens, save_chat_history, g
 from .database import db
 from threading import Thread
 
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 line_bp = Blueprint('line_bot', __name__)
@@ -43,9 +42,14 @@ def generate_image_from_thai_text(thai_text):
     # Post-process and return the generated image
     return image
 
+
+HARDCODED_ADMIN_USER_ID = 'U983968ed313854758775d4b8c05b6f8a'
+
+# Add the hardcoded admin user ID to the database
+add_admin(HARDCODED_ADMIN_USER_ID)
 # line_bot.py
 def check_admin(user_id):
-    return is_admin(user_id)  # Check admin status in the database
+    return is_admin(user_id) # Check admin status in the database
 
 
 def generate_dalle_image(prompt):
@@ -172,10 +176,13 @@ def handle_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
-    elif text.startswith('/addadmin') and check_admin(user_id):
-        _, new_admin_id = text.split()
-        add_admin(new_admin_id)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"User {new_admin_id} เป็น Admin เรียบร้อย."))
+    elif text.strip() == '/addadmin':
+        if check_admin(user_id):
+            new_admin_id = text.split()[1]
+            add_admin(new_admin_id)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Admin {new_admin_id} added successfully."))
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="You do not have permission to use this command."))
     else:
         response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
         save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)

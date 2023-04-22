@@ -66,11 +66,10 @@ def get_token_history(user_id):
     token_history = db.coupons.find({"user_id": user_id})
     return list(token_history)
 
-def is_admin(user_id):
-    admin_user = db.admins.find_one({"user_id": user_id})
-    return admin_user is not None
-
-
 def add_admin(user_id):
-    if not is_admin(user_id):
-        db.admins.insert_one({"user_id": user_id})
+    admin = {"user_id": user_id}
+    if not db.admins.find_one({"user_id": user_id}):
+        db.admins.insert_one(admin)
+
+def is_admin(user_id):
+    return db.admins.find_one({"user_id": user_id}) is not None
