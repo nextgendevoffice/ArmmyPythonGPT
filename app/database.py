@@ -65,3 +65,12 @@ def add_token(user_id, coupon_code):
 def get_token_history(user_id):
     token_history = db.coupons.find({"user_id": user_id})
     return list(token_history)
+
+def is_admin(user_id):
+    admin_user = db.admins.find_one({"user_id": user_id})
+    return admin_user is not None
+
+
+def add_admin(user_id):
+    if not is_admin(user_id):
+        db.admins.insert_one({"user_id": user_id})

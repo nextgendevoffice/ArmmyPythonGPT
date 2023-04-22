@@ -10,7 +10,7 @@ from . import thai_translation_model
 from . import image_generation_model
 import random
 import string
-from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history)
+from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history, add_admin, is_admin)
 from .database import db
 from threading import Thread
 
@@ -45,8 +45,7 @@ def generate_image_from_thai_text(thai_text):
 
 # line_bot.py
 def check_admin(user_id):
-    admin_user_id = 'U983968ed313854758775d4b8c05b6f8a'
-    return user_id == admin_user_id
+    return is_admin(user_id)  # Check admin status in the database
 
 
 def generate_dalle_image(prompt):
@@ -173,6 +172,10 @@ def handle_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="No token history found."))
+    elif text.startswith('/addadmin') and check_admin(user_id):
+        _, new_admin_id = text.split()
+        add_admin(new_admin_id)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"User {new_admin_id} เป็น Admin เรียบร้อย."))
     else:
         response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
         save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)
