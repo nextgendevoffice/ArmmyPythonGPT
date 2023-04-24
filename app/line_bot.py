@@ -13,6 +13,7 @@ import string
 from .database import (get_user_tokens, update_user_tokens, save_chat_history, get_chat_history, create_coupon, add_token, get_token_history, add_admin, is_admin, get_total_users, get_total_tokens_used)
 from .database import db
 from threading import Thread
+import time
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -192,7 +193,10 @@ def handle_message(event):
             reply_text = f"Total tokens used between {start_date} and {end_date}: {total_tokens_used}"
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
     else:
+        start_time = time.time()
         response, prompt_tokens, completion_tokens, total_tokens = generate_response(text)
+        end_time = time.time()
+        handle_message_time = end_time - start_time
         save_chat_history(user_id, text, response, prompt_tokens, completion_tokens, total_tokens)
         logging.info("Generated response: %s", response)
         tokens_used = total_tokens
