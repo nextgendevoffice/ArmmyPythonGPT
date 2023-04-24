@@ -1,5 +1,7 @@
 import cachetools
 import time
+import logging
+
 CACHE_SIZE = 100
 cache = cachetools.LRUCache(CACHE_SIZE)
 
@@ -12,6 +14,7 @@ def cached_requests(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         cache_time = end_time - start_time
+        logging.info(f"Cache time: {cache_time:.2f} seconds")
         cache[key] = result
         return result
     return wrapper
