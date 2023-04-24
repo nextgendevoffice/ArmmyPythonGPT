@@ -14,7 +14,9 @@ from .database import (get_user_tokens, update_user_tokens, save_chat_history, g
 from .database import db
 from threading import Thread
 import time
+from concurrent.futures import ThreadPoolExecutor
 
+executor = ThreadPoolExecutor(max_workers=50)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 line_bp = Blueprint('line_bot', __name__)
@@ -115,14 +117,11 @@ def send_waiting_message(user_id):
     waiting_message = "รออับดุลคิดแป๊บน่ะจ้ะ!!"
     line_bot_api.push_message(user_id, TextSendMessage(text=waiting_message))
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
+def handle_message_async(event):
     logging.info("Handling event: %s", event)
-
     user_id = event.source.user_id
     text = event.message.text
     tokens = get_user_tokens(user_id)
-
     if tokens is None:
         tokens = 3000
         update_user_tokens(user_id, tokens)
@@ -207,3 +206,8 @@ def handle_message(event):
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=response))
             update_user_tokens(user_id, new_tokens)
+            
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    logging.info("Handling event: %s", event)
+    executor.submit(handle_message_async, event)
