@@ -15,6 +15,15 @@ from .database import db
 from threading import Thread
 import time
 from concurrent.futures import ThreadPoolExecutor
+import requests
+import json
+from datetime import datetime
+
+# Add these constants at the beginning of the file
+GBPRIMEPAY_API_KEY = os.environ["GBPRIMEPAY_API_KEY"]
+GBPRIMEPAY_SECRET_KEY = os.environ["GBPRIMEPAY_SECRET_KEY"]
+GBPRIMEPAY_BASE_URL = "https://api.gbprimepay.com/v2"
+
 
 executor = ThreadPoolExecutor(max_workers=50)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -65,6 +74,38 @@ def generate_dalle_image(prompt):
 
     image_url = response['data'][0]['url']
     return image_url
+# Add these two functions after the `generate_dalle_image` function
+def buy_token(user_id, amount_baht):
+    amount_tokens = int((amount_baht / 0.70) * 1000)
+    payload = {
+        "amount": amount_baht,
+        "currency": "THB",
+        "reference_no": f"{user_id}-{time.time()}",
+        "api_key": GBPRIMEPAY_API_KEY,
+        "user_defined_1": user_id,
+        "user_defined_2": amount_tokens
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {GBPRIMEPAY_SECRET_KEY}"
+    }
+    response = requests.post(f"{GBPRIMEPAY_BASE_URL}/qrcash/create", data=json.dumps(payload), headers=headers)
+
+    if response.status_code == 200:
+        qr_code_url = response.json()["qrcode"]
+        db.user_token_purchase.insert_one({
+            "user_id": user_id,
+            "amount_baht": amount_baht,
+            "amount_tokens": amount_tokens,
+            "timestamp": datetime.utcnow(),
+            "status": "pending"
+        })
+        return qr_code_url
+    else:
+        return None
+
+def get_purchase_history(user_id):
+    return list(db.user_token_purchase.find({"user_id": user_id}).sort("timestamp", -1))
 
 @line_bp.route("/callback", methods=['POST'])
 def callback():
@@ -152,6 +193,19 @@ def handle_message_async(event):
     elif text.strip() == '/history':
         chat_history = get_chat_history(user_id)
         history_text = "\n\n".join([f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history])
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
+    elif text.startswith('/buytoken'):
+        _, amount_baht = text.split()
+        amount_baht = int(amount_baht)
+        qr_code_url = buy_token(user_id, amount_baht)
+        if qr_code_url:
+            image_message = ImageSendMessage(original_content_url=qr_code_url, preview_image_url=qr_code_url)
+            line_bot_api.reply_message(event.reply_token, image_message)
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="ไม่สามารถสร้าง QR Code ได้ กรุณาลองใหม่อีกครั้ง"))
+    elif text.strip() == '/buyhistory':
+        purchase_history = get_purchase_history(user_id)
+        history_text = "\n\n".join([f"Amount Baht: {item['amount_baht']}\nAmount Tokens: {item['amount_tokens']}\nTimestamp: {item['timestamp']}\nStatus: {item['status']}" for item in purchase_history])
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=history_text))
     elif text.startswith('/createcoupon') and check_admin(user_id):
         _, num_coupons, tokens = text.split()
