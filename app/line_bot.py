@@ -114,7 +114,7 @@ def add_token(user_id, coupon_code):
     return f"คุณเติม Token จำนวน {coupon['tokens']} tokens. เรียบร้อยแล้ว"
 
 def send_waiting_message(user_id):
-    waiting_message = "รออับดุลคิดแป๊บน่ะจ้ะ!!"
+    waiting_message = "รออับดุลคิดแป๊บนะจ๊ะ!!"
     line_bot_api.push_message(user_id, TextSendMessage(text=waiting_message))
 
 def handle_message_async(event):
