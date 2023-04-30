@@ -150,7 +150,7 @@ def handle_message_async(event):
     elif text.startswith('/user'):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"User ID ของคุณคือ: {user_id}"))
     elif text.startswith('/buytoken'):
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"เติมเงินได้ที่ :https://ul-ai.com/?User_id={user_id}"))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"เติมเงินได้ที่ :https://abul-ai.com/?User_id={user_id}"))
     elif text.strip() == '/history':
         chat_history = get_chat_history(user_id)
         history_text = "\n\n".join([f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history])
