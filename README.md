@@ -1,11 +1,15 @@
-# ArmmyPythonGPT
-1. <code>/createcoupon <num_coupons> <tokens></code>: Creates a specified number of coupons, each with a specified number of tokens.
-Example: /createcoupon 5 1000 creates 5 coupons, each with 1000 tokens.
+คำสั่งสำหรับผู้ใช้ทั่วไป:
 
-2. <code>/addadmin <user_id></code>: Adds a new admin user by their user ID.
-Example: /addadmin U3c0f79e61b3e70fc2f42b23845a13f9c
+/img: สร้างภาพจากข้อความภาษาไทย
+/tokens: ตรวจสอบจำนวน tokens ที่คุณมี
+/user: แสดง User ID ของคุณ
+/buytoken: แสดงลิงค์เว็บไซต์เติมเงิน
+/history: ดูประวัติการสนทนาของคุณ
+/addcoupon: เติม tokens โดยใช้รหัสคูปอง
 
-3. <code>/totaluser</code>: Shows the total number of members.
+คำสั่งสำหรับผู้ดูแลระบบ:
 
-4. <code>/usetoken <Start> <End></code>: Displays the number of tokens used in the selected period.
-Example: /usetoken 01-04-2023 20-04-2023
+/createcoupon <จำนวน> <โทเค็น>: สร้างคูปอง tokens
+/addadmin: เพิ่มผู้ดูแลระบบใหม่
+/totaluser: แสดงจำนวนผู้ใช้ทั้งหมด
+/usetoken: ตรวจสอบจำนวน tokens ที่ถูกใช้ในช่วงเวลาที่กำหนด
